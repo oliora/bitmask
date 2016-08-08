@@ -100,7 +100,7 @@ namespace boost {
         using value_type = T;
         using underlying_type = bitmask_detail::underlying_type_t<T>;
 
-        constexpr bitmask() noexcept: m_bits(0) {}
+        constexpr bitmask() noexcept = default;
         constexpr bitmask(std::nullptr_t) noexcept: m_bits(0) {}
         constexpr bitmask(const value_type& value) noexcept: m_bits(static_cast<underlying_type>(value)) {}
 
@@ -155,7 +155,7 @@ namespace boost {
 
         explicit bitmask(const underlying_type& bits) noexcept : m_bits(bits) {}
 
-        underlying_type m_bits;
+        underlying_type m_bits = 0;
     };
 
     template<class T>
@@ -212,7 +212,7 @@ namespace std
     template<class T>
     struct hash<boost::bitmask<T>>
     {
-        std::size_t operator() (const boost::bitmask<T>& op) const
+        constexpr std::size_t operator() (const boost::bitmask<T>& op) const noexcept
         {
             using ut = typename boost::bitmask<T>::underlying_type;
             return std::hash<ut>{}(op.bits());
