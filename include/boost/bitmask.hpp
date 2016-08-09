@@ -4,7 +4,7 @@
 
     A generic implementation of the BitmaskType C++ concept
     http://en.cppreference.com/w/cpp/concept/BitmaskType
-    by Andrey Upadyshev [ oliora@gmail.com, https://github.com/oliora/ ]
+    by Andrey Upadyshev (oliora@gmail.com)
 
     Some documentation may be available at
     https://github.com/oliora/bitmask
@@ -90,7 +90,13 @@ namespace boost {
         }
     }
 
-    using bitmask_detail::get_enum_mask;
+    template<class T>
+    inline constexpr bitmask_detail::underlying_type_t<T> get_enum_mask(T) noexcept
+    {
+        static_assert(bitmask_detail::is_valid_enum_definition<T>::value,
+                      "Only one of _bitmask_max_element and _bitmask_value_mask can be specified");
+        return bitmask_detail::get_enum_mask(T{});
+    }
 
 
     template<class T>
@@ -148,9 +154,6 @@ namespace boost {
         }
 
     private:
-        static_assert(bitmask_detail::is_valid_enum_definition<T>::value,
-                      "Only one of _bitmask_max_element and _bitmask_value_mask can be specified");
-
         static constexpr underlying_type mask = get_enum_mask(T{});
 
         explicit bitmask(const underlying_type& bits) noexcept : m_bits(bits) {}
