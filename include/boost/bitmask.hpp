@@ -51,13 +51,29 @@ namespace boost {
         template<typename... Ts> using void_t = typename make_void<Ts...>::type;
 
         template<class T>
-        using underlying_type_t = typename std::underlying_type<T>::type;
+        struct underlying_type
+        {
+            static_assert(std::is_enum<T>::value, "T must be a enum type");
+
+            using type = typename std::underlying_type<T>::type;
+        };
 
         template<class T>
-        inline constexpr underlying_type_t<T> mask_from_max_element(T max_element) noexcept
+        using underlying_type_t = typename underlying_type<T>::type;
+
+        template<class T, T MaxElement = T::_bitmask_max_element>
+        struct mask_from_max_element
         {
-            return static_cast<underlying_type_t<T>>(max_element) << 1 - 1;
-        }
+            static constexpr underlying_type_t<T> max_element_value_ =
+                static_cast<underlying_type_t<T>>(MaxElement);
+
+            static_assert(max_element_value_ >= 0, "Max element can not be negative");
+
+            // `(value - 1 << 1) + 1` is used rather that simpler `(value << 1) - 1`
+            // because latter can overflow.
+            static constexpr underlying_type_t<T> value =
+                max_element_value_ ? (max_element_value_ - 1 << 1) + 1 : 0;
+        };
 
         template<class, class = void_t<>>
         struct has_max_element : std::false_type {};
@@ -86,7 +102,7 @@ namespace boost {
         inline constexpr typename std::enable_if<has_max_element<T>::value, underlying_type_t<T>>::type
         get_enum_mask(T) noexcept
         {
-            return mask_from_max_element(T::_bitmask_max_element);
+            return mask_from_max_element<T>::value;
         }
     }
 
@@ -105,6 +121,7 @@ namespace boost {
     public:
         using value_type = T;
         using underlying_type = bitmask_detail::underlying_type_t<T>;
+        static constexpr underlying_type mask_value = get_enum_mask(T{});
 
         constexpr bitmask() noexcept = default;
         constexpr bitmask(std::nullptr_t) noexcept: m_bits(0) {}
@@ -117,7 +134,7 @@ namespace boost {
 
         constexpr bitmask operator ~ () const noexcept
         {
-            return bitmask{~m_bits & mask};
+            return bitmask{~m_bits & mask_value};
         }
 
         constexpr bitmask operator & (const bitmask& r) const noexcept
@@ -154,8 +171,6 @@ namespace boost {
         }
 
     private:
-        static constexpr underlying_type mask = get_enum_mask(T{});
-
         explicit bitmask(const underlying_type& bits) noexcept : m_bits(bits) {}
 
         underlying_type m_bits = 0;
@@ -232,11 +247,13 @@ namespace std
     inline constexpr boost::bitmask<value_type> operator ~ (const value_type& op) noexcept { return ~boost::bitmask<value_type>(op); }
 
 #define BOOST_BITMASK_DETAIL_DEFINE_VALUE_MASK(value_type, value_mask) \
-    inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { return value_mask; }
+    inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept {  \
+        return value_mask;                                                                                      \
+    }
 
 #define BOOST_BITMASK_DETAIL_DEFINE_MAX_ELEMENT(value_type, max_element) \
-    inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { \
-        return boost::bitmask_detail::mask_from_max_element(value_type::max_element); \
+    inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept {  \
+        return boost::bitmask_detail::mask_from_max_element<value_type, value_type::max_element>::value;        \
     }
 
 
