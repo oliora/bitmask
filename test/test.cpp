@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <map>
 
-
 TEST_CASE( "zero_bitmask", "[]" )
 {
     using intrusive::syntax_option_type;
@@ -162,7 +161,7 @@ namespace {
         v1 = 1,
         v2 = 0x8000000000000000,
 
-        _bitmask_max_element = v1
+        _bitmask_max_element = v2
     };
         
     BOOST_BITMASK(longest_enum)
@@ -296,3 +295,7 @@ TEST_CASE( "bitmask_nonintrusive_value_mask", "[]" )
 
 TEST_CASE( "bitmask_nonintrusive_max_element", "[]" )
 {}
+
+TEST_CASE("bitmask_ones_complement", "[]")
+{
+}
