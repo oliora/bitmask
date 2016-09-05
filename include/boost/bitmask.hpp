@@ -9,6 +9,8 @@
     Some documentation may be available at
     https://github.com/oliora/bitmask
  
+    Version: 1.0
+ 
     **********************************************************************
 
     This is free and unencumbered software released into the public domain.
@@ -104,6 +106,16 @@ namespace boost {
         {
             return mask_from_max_element<T>::value;
         }
+
+        template<class T>
+        static constexpr underlying_type_t<T> disable_unused_function_warnings() noexcept
+        {
+            return (static_cast<T>(0) & static_cast<T>(0)).bits()
+                & (static_cast<T>(0) | static_cast<T>(0)).bits()
+                & (static_cast<T>(0) ^ static_cast<T>(0)).bits()
+                & (~static_cast<T>(0)).bits()
+                & bits(static_cast<T>(0));
+        }
     }
 
     template<class T>
@@ -125,10 +137,9 @@ namespace boost {
 
         constexpr bitmask() noexcept = default;
         constexpr bitmask(std::nullptr_t) noexcept: m_bits(0) {}
-        constexpr bitmask(const value_type& value) noexcept: m_bits(static_cast<underlying_type>(value)) {}
+        constexpr bitmask(value_type value) noexcept: m_bits(static_cast<underlying_type>(value)) {}
 
         constexpr underlying_type bits() const noexcept { return m_bits; }
-        constexpr operator underlying_type () const noexcept { return bits(); }
 
         constexpr explicit operator bool() const noexcept { return m_bits ? true : false; }
 
@@ -177,13 +188,13 @@ namespace boost {
     };
 
     template<class T>
-    inline constexpr bitmask<T> operator & (const T& value, const bitmask<T>& bm) noexcept { return bm & value; }
+    inline constexpr bitmask<T> operator & (T l, const bitmask<T>& r) noexcept { return r & l; }
 
     template<class T>
-    inline constexpr bitmask<T> operator | (const T& value, const bitmask<T>& bm) noexcept { return bm | value; }
+    inline constexpr bitmask<T> operator | (T l, const bitmask<T>& r) noexcept { return r | l; }
 
     template<class T>
-    inline constexpr bitmask<T> operator ^ (const T& value, const bitmask<T>& bm) noexcept { return bm ^ value; }
+    inline constexpr bitmask<T> operator ^ (T l, const bitmask<T>& r) noexcept { return r ^ l; }
 
     template<class T>
     inline constexpr bool operator != (const bitmask<T>& l, const bitmask<T>& r) noexcept { return l.bits() != r.bits(); }
@@ -192,16 +203,16 @@ namespace boost {
     inline constexpr bool operator == (const bitmask<T>& l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
 
     template<class T>
-    inline constexpr bool operator != (const T& l, const bitmask<T>& r) noexcept { return static_cast<bitmask_detail::underlying_type_t<T>>(l) != r.bits(); }
+    inline constexpr bool operator != (T l, const bitmask<T>& r) noexcept { return static_cast<bitmask_detail::underlying_type_t<T>>(l) != r.bits(); }
 
     template<class T>
-    inline constexpr bool operator == (const T& l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
+    inline constexpr bool operator == (T l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
 
     template<class T>
-    inline constexpr bool operator != (const bitmask<T>& l, const T& r) noexcept { return l.bits() != static_cast<bitmask_detail::underlying_type_t<T>>(r); }
+    inline constexpr bool operator != (const bitmask<T>& l, T r) noexcept { return l.bits() != static_cast<bitmask_detail::underlying_type_t<T>>(r); }
 
     template<class T>
-    inline constexpr bool operator == (const bitmask<T>& l, const T& r) noexcept { return ! operator != (l, r); }
+    inline constexpr bool operator == (const bitmask<T>& l, T r) noexcept { return ! operator != (l, r); }
 
     template<class Integral, class T>
     inline constexpr typename std::enable_if<std::is_integral<Integral>::value, bool>::type
@@ -247,11 +258,12 @@ namespace std
 // Implementation detail macros
 
 #define BOOST_BITMASK_DETAIL_DEFINE_OPS(value_type) \
-    inline constexpr boost::bitmask<value_type> operator & (const value_type& l, const value_type& r) noexcept { return boost::bitmask<value_type>(l) & r; } \
-    inline constexpr boost::bitmask<value_type> operator | (const value_type& l, const value_type& r) noexcept { return boost::bitmask<value_type>(l) | r; } \
-    inline constexpr boost::bitmask<value_type> operator ^ (const value_type& l, const value_type& r) noexcept { return boost::bitmask<value_type>(l) ^ r; } \
-    inline constexpr boost::bitmask<value_type> operator ~ (const value_type& op) noexcept { return ~boost::bitmask<value_type>(op); }                       \
-    inline constexpr boost::bitmask<value_type>::underlying_type bits(const value_type& op) noexcept { return boost::bitmask<value_type>(op).bits(); }
+    inline constexpr boost::bitmask<value_type> operator & (value_type l, value_type r) noexcept { return boost::bitmask<value_type>{l} & r; } \
+    inline constexpr boost::bitmask<value_type> operator | (value_type l, value_type r) noexcept { return boost::bitmask<value_type>{l} | r; } \
+    inline constexpr boost::bitmask<value_type> operator ^ (value_type l, value_type r) noexcept { return boost::bitmask<value_type>{l} ^ r; } \
+    inline constexpr boost::bitmask<value_type> operator ~ (value_type op) noexcept { return ~boost::bitmask<value_type>{op}; }                \
+    inline constexpr boost::bitmask<value_type>::underlying_type bits(value_type op) noexcept { return boost::bitmask<value_type>{op}.bits(); }\
+    using unused_bitmask_ ## value_type ## _t_ = decltype(boost::bitmask_detail::disable_unused_function_warnings<value_type>());
 
 #define BOOST_BITMASK_DETAIL_DEFINE_VALUE_MASK(value_type, value_mask) \
     inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { return value_mask; }
