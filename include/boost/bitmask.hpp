@@ -55,9 +55,9 @@ namespace boost {
         template<class T>
         struct underlying_type
         {
-            static_assert(std::is_enum<T>::value, "T must be a enum type");
+            static_assert(std::is_enum<T>::value, "T is not a enum type");
 
-            using type = typename std::underlying_type<T>::type;
+            using type = typename std::make_unsigned<typename std::underlying_type<T>::type>::type;
         };
 
         template<class T>
@@ -69,10 +69,16 @@ namespace boost {
             static constexpr underlying_type_t<T> max_element_value_ =
                 static_cast<underlying_type_t<T>>(MaxElement);
 
-            static_assert(max_element_value_ >= 0, "Max element can not be negative");
+            static_assert(max_element_value_ >= 0,
+                          "Max element is negative");
+
+            // If you really have to define a bitmask that uses the highest bit of signed type (i.e. the sign bit) then
+            // define the value mask rather than the max element.
+            static_assert(max_element_value_ <= (std::numeric_limits<typename std::underlying_type<T>::type>::max() >> 1) + 1,
+                          "Max element is greater than the underlying type's highest bit");
 
             // `(value - 1 << 1) + 1` is used rather that simpler `(value << 1) - 1`
-            // because latter can overflow.
+            // because latter overflows in case if `value` is the highest bit of the underlying type.
             static constexpr underlying_type_t<T> value =
                 max_element_value_ ? (max_element_value_ - 1 << 1) + 1 : 0;
         };
@@ -122,7 +128,7 @@ namespace boost {
     inline constexpr bitmask_detail::underlying_type_t<T> get_enum_mask(T) noexcept
     {
         static_assert(bitmask_detail::is_valid_enum_definition<T>::value,
-                      "Only one of _bitmask_max_element and _bitmask_value_mask can be specified");
+                      "Both of _bitmask_max_element and _bitmask_value_mask are specified");
         return bitmask_detail::get_enum_mask(T{});
     }
 
@@ -133,7 +139,8 @@ namespace boost {
     public:
         using value_type = T;
         using underlying_type = bitmask_detail::underlying_type_t<T>;
-        static constexpr underlying_type mask_value = get_enum_mask(T{});
+
+        enum : underlying_type { mask_value = get_enum_mask(T{}) };
 
         constexpr bitmask() noexcept = default;
         constexpr bitmask(std::nullptr_t) noexcept: m_bits(0) {}
