@@ -199,57 +199,67 @@ namespace boost {
     };
 
     template<class T>
-    inline constexpr bitmask<T> operator & (T l, const bitmask<T>& r) noexcept { return r & l; }
+    inline constexpr bitmask<T>
+    operator & (T l, const bitmask<T>& r) noexcept { return r & l; }
 
     template<class T>
-    inline constexpr bitmask<T> operator | (T l, const bitmask<T>& r) noexcept { return r | l; }
+    inline constexpr bitmask<T>
+    operator | (T l, const bitmask<T>& r) noexcept { return r | l; }
 
     template<class T>
-    inline constexpr bitmask<T> operator ^ (T l, const bitmask<T>& r) noexcept { return r ^ l; }
+    inline constexpr bitmask<T>
+    operator ^ (T l, const bitmask<T>& r) noexcept { return r ^ l; }
 
     template<class T>
-    inline constexpr bool operator != (const bitmask<T>& l, const bitmask<T>& r) noexcept { return l.bits() != r.bits(); }
+    inline constexpr bool
+    operator != (const bitmask<T>& l, const bitmask<T>& r) noexcept { return l.bits() != r.bits(); }
 
     template<class T>
-    inline constexpr bool operator == (const bitmask<T>& l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
+    inline constexpr bool
+    operator == (const bitmask<T>& l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
 
     template<class T>
-    inline constexpr bool operator != (T l, const bitmask<T>& r) noexcept { return static_cast<bitmask_detail::underlying_type_t<T>>(l) != r.bits(); }
+    inline constexpr bool
+    operator != (T l, const bitmask<T>& r) noexcept { return static_cast<bitmask_detail::underlying_type_t<T>>(l) != r.bits(); }
 
     template<class T>
-    inline constexpr bool operator == (T l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
+    inline constexpr bool
+    operator == (T l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
 
     template<class T>
-    inline constexpr bool operator != (const bitmask<T>& l, T r) noexcept { return l.bits() != static_cast<bitmask_detail::underlying_type_t<T>>(r); }
+    inline constexpr bool
+    operator != (const bitmask<T>& l, T r) noexcept { return l.bits() != static_cast<bitmask_detail::underlying_type_t<T>>(r); }
 
     template<class T>
     inline constexpr bool operator == (const bitmask<T>& l, T r) noexcept { return ! operator != (l, r); }
 
-    template<class Integral, class T>
-    inline constexpr typename std::enable_if<std::is_integral<Integral>::value, bool>::type
-    operator != (const Integral& l, const bitmask<T>& r) noexcept { return l != r.bits(); }
+    template<class T>
+    inline constexpr bool
+    operator != (const bitmask_detail::underlying_type_t<T>& l, const bitmask<T>& r) noexcept { return l != r.bits(); }
 
-    template<class Integral, class T>
-    inline constexpr typename std::enable_if<std::is_integral<Integral>::value, bool>::type
-    operator == (const Integral& l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
+    template<class T>
+    inline constexpr bool
+    operator == (const bitmask_detail::underlying_type_t<T>& l, const bitmask<T>& r) noexcept { return ! operator != (l, r); }
 
-    template<class Integral, class T>
-    inline constexpr typename std::enable_if<std::is_integral<Integral>::value, bool>::type
-    operator != (const bitmask<T>& l, const Integral& r) noexcept { return l.bits() != r; }
+    template<class T>
+    inline constexpr bool
+    operator != (const bitmask<T>& l, const bitmask_detail::underlying_type_t<T>& r) noexcept { return l.bits() != r; }
 
-    template<class Integral, class T>
-    inline constexpr typename std::enable_if<std::is_integral<Integral>::value, bool>::type
-    operator == (const bitmask<T>& l, const Integral& r) noexcept { return ! operator != (l, r); }
+    template<class T>
+    inline constexpr bool
+    operator == (const bitmask<T>& l, const bitmask_detail::underlying_type_t<T>& r) noexcept { return ! operator != (l, r); }
 
     // Allow `bitmask` to be be used as a map key
     template<class T>
-    inline constexpr bool operator < (const bitmask<T>& l, const bitmask<T>& r) noexcept { return l.bits() < r.bits(); }
+    inline constexpr bool
+    operator < (const bitmask<T>& l, const bitmask<T>& r) noexcept { return l.bits() < r.bits(); }
 
     template<class T>
-    inline constexpr typename bitmask<T>::underlying_type bits(const bitmask<T>& bm) noexcept
-    {
-        return bm.bits();
-    }
+    inline constexpr bitmask_detail::underlying_type_t<T>
+    bits(const bitmask<T>& bm) noexcept { return bm.bits(); }
+
+
+    // Implementation
 
     template<class T>
     constexpr typename bitmask<T>::underlying_type bitmask<T>::mask_value;

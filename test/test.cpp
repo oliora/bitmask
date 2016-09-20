@@ -235,7 +235,7 @@ namespace {
 
         _bitmask_max_element = v2
     };
-        
+
     BOOST_BITMASK(longest_enum)
 }
 
@@ -295,7 +295,7 @@ TEST_CASE( "bitmask_compare_and_hash", "[]" )
 TEST_CASE( "bitmask_assign_op", "[]" )
 {
     using intrusive::open_mode;
-    
+
     boost::bitmask<open_mode> x = open_mode::app;
     CHECK((x & open_mode::app));
     CHECK(!(x & open_mode::ate));
@@ -460,7 +460,7 @@ namespace {
         _bitmask_max_element = max
     };
 
-    BOOST_BITMASK(extreme_u8);
+    BOOST_BITMASK(extreme_u8)
 
     enum class extreme_max_8: int8_t {
         min = 1,
@@ -469,7 +469,7 @@ namespace {
         _bitmask_max_element = max
     };
 
-    BOOST_BITMASK(extreme_max_8);
+    BOOST_BITMASK(extreme_max_8)
 
     enum class extreme_mask_8: int8_t {
         min = 1,
@@ -478,8 +478,8 @@ namespace {
         _bitmask_value_mask = 0x7F
     };
 
-    BOOST_BITMASK(extreme_mask_8);
-    
+    BOOST_BITMASK(extreme_mask_8)
+
     enum class screwed_extreme_8: int8_t {
         max = int8_t(0x80),
         min = 0x40,
@@ -487,7 +487,7 @@ namespace {
         _bitmask_value_mask = int8_t(0xC1)
     };
 
-    BOOST_BITMASK(screwed_extreme_8);
+    BOOST_BITMASK(screwed_extreme_8)
 }
 
 TEST_CASE("bitmask_limits", "[]")
