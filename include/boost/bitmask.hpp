@@ -8,9 +8,9 @@
 
     Some documentation may be available at
     https://github.com/oliora/bitmask
- 
+
     Version: 1.0
- 
+
     **********************************************************************
 
     This is free and unencumbered software released into the public domain.
@@ -80,7 +80,7 @@ namespace boost {
             // `(value - 1 << 1) + 1` is used rather that simpler `(value << 1) - 1`
             // because latter overflows in case if `value` is the highest bit of the underlying type.
             static constexpr underlying_type_t<T> value =
-                max_element_value_ ? (max_element_value_ - 1 << 1) + 1 : 0;
+                max_element_value_ ? ((max_element_value_ - 1) << 1) + 1 : 0;
         };
 
         template<class, class = void_t<>>
@@ -89,29 +89,33 @@ namespace boost {
         template<class T>
         struct has_max_element<T, void_t<decltype(T::_bitmask_max_element)>> : std::true_type {};
 
+#if !defined _MSC_VER
+        // For some reason MS Visual Studio 14 (2015) can't instantiate
+        // `decltype(T::_bitmask_value_mask)` below so I have to use workaround.
         template<class, class = void_t<>>
         struct has_value_mask : std::false_type {};
 
         template<class T>
         struct has_value_mask<T, void_t<decltype(T::_bitmask_value_mask)>> : std::true_type {};
+#else
+        template<class T>
+        struct has_value_mask: std::integral_constant<bool, !has_max_element<T>::value> {};
+#endif
 
         template<class T>
         struct is_valid_enum_definition : std::integral_constant<bool,
-            !has_value_mask<T>::value || !has_max_element<T>::value> {};
+            !(has_value_mask<T>::value && has_max_element<T>::value)> {};
+
+        template<class, class = void>
+        struct enum_mask;
 
         template<class T>
-        inline constexpr typename std::enable_if<has_value_mask<T>::value, underlying_type_t<T>>::type
-        get_enum_mask(T) noexcept
-        {
-            return static_cast<underlying_type_t<T>>(T::_bitmask_value_mask);
-        }
+        struct enum_mask<T, typename std::enable_if<has_max_element<T>::value>::type>
+            : std::integral_constant<underlying_type_t<T>, mask_from_max_element<T>::value> {};
 
         template<class T>
-        inline constexpr typename std::enable_if<has_max_element<T>::value, underlying_type_t<T>>::type
-        get_enum_mask(T) noexcept
-        {
-            return mask_from_max_element<T>::value;
-        }
+        struct enum_mask<T, typename std::enable_if<has_value_mask<T>::value>::type>
+            : std::integral_constant<underlying_type_t<T>, static_cast<underlying_type_t<T>>(T::_bitmask_value_mask)> {};
 
         template<class T>
         static constexpr underlying_type_t<T> disable_unused_function_warnings() noexcept
@@ -125,11 +129,11 @@ namespace boost {
     }
 
     template<class T>
-    inline constexpr bitmask_detail::underlying_type_t<T> get_enum_mask(T) noexcept
+    inline constexpr bitmask_detail::underlying_type_t<T> get_enum_mask(const T&) noexcept
     {
         static_assert(bitmask_detail::is_valid_enum_definition<T>::value,
                       "Both of _bitmask_max_element and _bitmask_value_mask are specified");
-        return bitmask_detail::get_enum_mask(T{});
+        return bitmask_detail::enum_mask<T>::value;
     }
 
 
@@ -140,11 +144,11 @@ namespace boost {
         using value_type = T;
         using underlying_type = bitmask_detail::underlying_type_t<T>;
 
-        enum : underlying_type { mask_value = get_enum_mask(T{}) };
+        static constexpr underlying_type mask_value = get_enum_mask(static_cast<value_type>(0));
 
         constexpr bitmask() noexcept = default;
         constexpr bitmask(std::nullptr_t) noexcept: m_bits(0) {}
-        constexpr bitmask(value_type value) noexcept: m_bits(static_cast<underlying_type>(value)) {}
+        constexpr bitmask(const value_type& value) noexcept: bitmask{static_cast<underlying_type>(value)} {}
 
         constexpr underlying_type bits() const noexcept { return m_bits; }
 
@@ -152,22 +156,22 @@ namespace boost {
 
         constexpr bitmask operator ~ () const noexcept
         {
-            return bitmask{~m_bits & mask_value};
+            return bitmask{static_cast<underlying_type>(~m_bits & mask_value)};
         }
 
         constexpr bitmask operator & (const bitmask& r) const noexcept
         {
-            return bitmask{m_bits & r.m_bits};
+            return bitmask{static_cast<underlying_type>(m_bits & r.m_bits)};
         }
 
         constexpr bitmask operator | (const bitmask& r) const noexcept
         {
-            return bitmask{m_bits | r.m_bits};
+            return bitmask{static_cast<underlying_type>(m_bits | r.m_bits)};
         }
 
         constexpr bitmask operator ^ (const bitmask& r) const noexcept
         {
-            return bitmask{m_bits ^ r.m_bits};
+            return bitmask{static_cast<underlying_type>(m_bits ^ r.m_bits)};
         }
 
         bitmask& operator |= (const bitmask& r) noexcept
@@ -246,6 +250,9 @@ namespace boost {
     {
         return bm.bits();
     }
+
+    template<class T>
+    constexpr typename bitmask<T>::underlying_type bitmask<T>::mask_value;
 }
 
 
