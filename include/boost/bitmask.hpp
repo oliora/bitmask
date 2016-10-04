@@ -42,6 +42,7 @@
 
 #include <type_traits>
 #include <functional>  // for std::hash
+#include <cassert>
 
 
 namespace boost {
@@ -126,6 +127,20 @@ namespace boost {
                 & (~static_cast<T>(0)).bits()
                 & bits(static_cast<T>(0));
         }
+
+        template<class Assert>
+        inline void constexpr_assert_failed(Assert&& a) noexcept { a(); }
+
+        // When evaluated at compile time emits a compilation error if condition is not true.
+        // Invokes the standard assert at run time.
+        #define bitmask_constexpr_assert(cond) \
+            ((void)((cond) ? 0 : (boost::bitmask_detail::constexpr_assert_failed([](){ assert(!#cond);}), 0)))
+
+        template<class T>
+        inline constexpr T checked_value(T value, T mask)
+        {
+            return bitmask_constexpr_assert((value & ~mask) == 0), value;
+        }
     }
 
     template<class T>
@@ -147,12 +162,14 @@ namespace boost {
         static constexpr underlying_type mask_value = get_enum_mask(static_cast<value_type>(0));
 
         constexpr bitmask() noexcept = default;
-        constexpr bitmask(std::nullptr_t) noexcept: m_bits(0) {}
-        constexpr bitmask(const value_type& value) noexcept: bitmask{static_cast<underlying_type>(value)} {}
+        constexpr bitmask(std::nullptr_t) noexcept: m_bits{0} {}
+
+        constexpr bitmask(value_type value) noexcept
+        : m_bits{bitmask_detail::checked_value(static_cast<underlying_type>(value), mask_value)} {}
 
         constexpr underlying_type bits() const noexcept { return m_bits; }
 
-        constexpr explicit operator bool() const noexcept { return m_bits ? true : false; }
+        constexpr explicit operator bool() const noexcept { return bits() ? true : false; }
 
         constexpr bitmask operator ~ () const noexcept
         {
@@ -193,7 +210,7 @@ namespace boost {
         }
 
     private:
-        explicit bitmask(const underlying_type& bits) noexcept : m_bits(bits) {}
+        explicit bitmask(underlying_type bits) noexcept : m_bits(bits) {}
 
         underlying_type m_bits = 0;
     };

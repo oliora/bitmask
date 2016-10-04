@@ -508,3 +508,23 @@ TEST_CASE("bitmask_limits", "[]")
     static_assert(boost::bitmask<screwed_extreme_8>::mask_value == 0xC1, "");
     CHECK((screwed_extreme_8::max | screwed_extreme_8::min).bits() == 0xC0);
 }
+
+namespace {
+    using boost::bitmask_detail::void_t;
+    using boost::bitmask_detail::underlying_type_t;
+
+    template<class T, T value, typename = void_t<>>
+    struct is_bitmask_constructible : std::false_type {};
+
+    template<class T, T value>
+    struct is_bitmask_constructible<T, value, void_t<std::integral_constant<underlying_type_t<T>, boost::bitmask<T>{value}.bits()>>> : std::true_type {};
+}
+
+TEST_CASE("incorrect_mask", "[]")
+{
+    using intrusive::open_mode;
+
+    static_assert(is_bitmask_constructible<open_mode, open_mode::app>::value, "");
+
+    static_assert(!is_bitmask_constructible<open_mode, static_cast<open_mode>(0x20)>::value, "");
+}
