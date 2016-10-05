@@ -91,14 +91,14 @@ namespace boost {
         struct has_max_element<T, void_t<decltype(T::_bitmask_max_element)>> : std::true_type {};
 
 #if !defined _MSC_VER
-        // For some reason MS Visual Studio 14 (2015) can't instantiate
-        // `decltype(T::_bitmask_value_mask)` below so I have to use workaround.
         template<class, class = void_t<>>
         struct has_value_mask : std::false_type {};
 
         template<class T>
         struct has_value_mask<T, void_t<decltype(T::_bitmask_value_mask)>> : std::true_type {};
 #else
+        // MS Visual Studio 2015 (even Update 3) has weird support for expressions SFINAE
+        // so I can't get a real check for `has_value_mask` to compile.
         template<class T>
         struct has_value_mask: std::integral_constant<bool, !has_max_element<T>::value> {};
 #endif

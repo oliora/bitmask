@@ -509,6 +509,9 @@ TEST_CASE("bitmask_limits", "[]")
     CHECK((screwed_extreme_8::max | screwed_extreme_8::min).bits() == 0xC0);
 }
 
+#if !defined _MSC_VER
+// MS Visual Studio 2015 (even Update 3) has weird support for expressions SFINAE so this test can't be compiled.
+
 namespace {
     using boost::bitmask_detail::void_t;
     using boost::bitmask_detail::underlying_type_t;
@@ -528,3 +531,5 @@ TEST_CASE("incorrect_mask", "[]")
 
     static_assert(!is_bitmask_constructible<open_mode, static_cast<open_mode>(0x20)>::value, "");
 }
+
+#endif
