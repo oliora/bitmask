@@ -109,6 +109,21 @@ TEST_CASE( "zero_bitmask", "[]" )
     CHECK(!z2);
     CHECK_FALSE(z2);
     CHECK(0 == z2.bits());
+
+    boost::bitmask<open_mode> z3{nullptr};
+    CHECK(!z3);
+    CHECK_FALSE(z3);
+    CHECK(0 == z3.bits());
+
+    boost::bitmask<open_mode> z4{0};
+    CHECK(!z4);
+    CHECK_FALSE(z4);
+    CHECK(0 == z4.bits());
+
+    boost::bitmask<open_mode> z5 = 0;
+    CHECK(!z5);
+    CHECK_FALSE(z5);
+    CHECK(0 == z5.bits());
 }
 
 TEST_CASE( "bitmask_basics", "[]" )

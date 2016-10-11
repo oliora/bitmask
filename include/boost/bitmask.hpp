@@ -173,22 +173,22 @@ namespace boost {
 
         constexpr bitmask operator ~ () const noexcept
         {
-            return bitmask{static_cast<underlying_type>(~m_bits & mask_value)};
+            return bitmask{std::true_type{}, ~m_bits & mask_value};
         }
 
         constexpr bitmask operator & (const bitmask& r) const noexcept
         {
-            return bitmask{static_cast<underlying_type>(m_bits & r.m_bits)};
+            return bitmask{std::true_type{}, m_bits & r.m_bits};
         }
 
         constexpr bitmask operator | (const bitmask& r) const noexcept
         {
-            return bitmask{static_cast<underlying_type>(m_bits | r.m_bits)};
+            return bitmask{std::true_type{}, m_bits | r.m_bits};
         }
 
         constexpr bitmask operator ^ (const bitmask& r) const noexcept
         {
-            return bitmask{static_cast<underlying_type>(m_bits ^ r.m_bits)};
+            return bitmask{std::true_type{}, m_bits ^ r.m_bits};
         }
 
         bitmask& operator |= (const bitmask& r) noexcept
@@ -210,7 +210,8 @@ namespace boost {
         }
 
     private:
-        explicit bitmask(underlying_type bits) noexcept : m_bits(bits) {}
+        template<class U>
+        bitmask(std::true_type, U bits) noexcept : m_bits(static_cast<underlying_type>(bits)) {}
 
         underlying_type m_bits = 0;
     };
