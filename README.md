@@ -1,35 +1,163 @@
 # bitmask
 A generic implementation of the [BitmaskType](http://en.cppreference.com/w/cpp/concept/BitmaskType) C++ concept.
 
-The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11.
+The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11 and constexpr.
 
 To use it just download [the latest version of `bitmask.hpp`](include/boost/bitmask.hpp) and put somewhere in your project.
 
 Please note that despite `bitmask` library uses the `boost` namespace it is not an official [Boost](www.boost.org) library.
 
-## Inspiring Example
+## Warm up example
 
 ```cpp
 enum class open_mode {
-    binary,
-    app,
-    in,
-    out,
-    trunc,
-    ate
+    binary = 0x01,
+    app    = 0x02,
+    in     = 0x04,
+    out    = 0x08,
+    trunc  = 0x10,
+    ate    = 0x20
 };
-
 BOOST_BITMASK_MAX_ELEMENT(open_mode, ate);
 
+
 File open_file(const char *filename, boost::bitmask<open_mode> mode);
+
 
 auto f = open_file("test.txt", open_mode::out | open_mode::binary | open_mode::trunk);
 ```
 ## Intro
 
-## 4 ways to define a bitmask
+`boost::bitmask` class is an implementation of [BitmaskType](http://en.cppreference.com/w/cpp/concept/BitmaskType) concept.
+In short, a bitmask is a finite set of distinct non-zero values (I'd call them "named bits"). It is usually used to implement a set of flags that can be passed to the function.
+
+`boost::bitmask` has one significant divergences from the concept: a bitmask value and the bitmask itself (i.e. a combination of bitmask values) are two different classes. So far I can't see any disadvantage because of this. The class also provides extra operations in addition to ones required by the concept.
 
 ## Available operations
+
+There is an overview of operations available for bitmask. Note that first of all the bitmask must be defined with one of `BOOST_BITMASK` macros.
+
+All bitmask operations are constexpr and noexcept.
+
+### Bitwise operations
+
+Bitwise operations `|`, `&`, `^` and `~` are available for both bitmask value and `boost::bitmask<T>` types.
+Bitwise assignment operators `|=`, `&=` and `^=` are available for `boost::bitmask<T>` only.
+
+```cpp
+enum class flags {
+    binary = 0x01,
+    app    = 0x02,
+    in     = 0x04,
+    out    = 0x08,
+};
+BOOST_BITMASK_MAX_ELEMENT(flags, out);
+
+auto x = flags::binary | flags::app & (~flags::in ^ flags::out);
+auto y = ~x ^ flags::binary;
+// both x and y are of type bitmask<flags>
+
+y &= flags::binary;
+```
+
+### Equal to and non equal to 
+
+Operators `==` and `!=` are available to compare two `boost::bitmask<T>`, `boost::bitmask<T>` with its bitmask value `T`, and `boost::bitmask<T>` with its underlying integral type.
+
+```cpp
+bitmask<flags> x = flags::binary | flags::app;
+bitmask<flags> y = flags::binary | flags::in;
+
+if (flags::binary == x) ...
+if (y != flags::binary | flags::app) ...
+if (x == y) ...
+if (y == 0x12) ...
+```
+### Operator bool
+
+`boost::bitmask<T>` has an explicit operator bool. One returns true if bitmask is non-zero and false otherwise.
+
+```cpp
+bitmask<flags> y;
+bitmask<flags> x = flags::binary | flags::app;
+
+if (y) ...                     // false
+if (!y) ...                    // true
+if (x & flags::binary) ...     // true
+if (!(x & flags::binary)) ...  // true
+```
+
+### Less than and `std::hash`
+
+There are operator `<` and `std::hash` specialization defined for `boost::bitmask<T>`.
+
+### Bit acccess
+
+Free function `bits()` is available for both bitmask value and `boost::bitmask<T>` types.
+`boost::bitmask<T>` also has a member function `bits()`.
+
+```cpp
+auto b1 = bits(flags::binary);
+auto b2 = bits(flags::binary | flags::in);
+auto b3 = (flags::binary | flags::in).bits();
+// All b1, b2 and b3 are of type std::underlying_type<flags>::type.
+```
+
+## 4 options to define a bitmask
+
+The bitmask can be defined in the four ways described below. Note that any way of definition could be used with any type of enum: unscoped (classic), scoped (C++11), relaxed and strongly typed ones.
+
+### Contiguous bitmask values
+
+Intrusive definition:
+
+```cpp
+enum class open_mode_1 {
+  app = 0x01,
+  in =  0x02,
+  out = 0x04,
+  
+  _bitmask_max_element = out
+};
+BOOST_BITMASK(open_mode_1)
+```
+
+Non-intrusive definition:
+
+```cpp
+enum class open_mode_2 {
+  app = 0x01,
+  in =  0x02,
+  out = 0x04,
+};
+BOOST_BITMASK_MAX_ELEMENT(open_mode_2, out)
+```
+
+### Noncontiguous bitmask values
+
+Intrusive definition:
+
+```cpp
+enum class open_mode_3 {
+  app = 0x02,
+  in =  0x08,
+  out = 0x10,
+  
+  _bitmask_value_mask = 0x1A // = 0x02 | 0x08 | 0x10
+};
+BOOST_BITMASK(open_mode_3)
+```
+
+Non-intrusive definition:
+
+```cpp
+enum class open_mode_4 {
+  app = 0x02,
+  in =  0x08,
+  out = 0x10,
+};
+BOOST_BITMASK_VALUE_MASK(open_mode_4, 0x1A)
+```
 
 ## How to build and run tests
 
@@ -45,7 +173,7 @@ make test
 
 ## Acknowledgement
 
-- LLVM libc++ for inspiring {{std::regex_constants}} implementation.
+- LLVM libc++ for inspiring `std::regex_constants` implementation.
 - [Jonathan Müller](https://twitter.com/foonathan) for great post https://foonathan.github.io/blog/2016/09/09/cpp14-concepts.html that inspired me to add compile-time tests (yet in progress).
 
 ## Tested compilers
