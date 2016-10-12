@@ -146,7 +146,7 @@ if (!(x & flags::binary)) ...  // true
 
 ### Less than
 
-There is operator `<` defined for `bitmask<T>` thus the class instances can be ordered (thus used as an ordered container key).
+There is operator `<` defined for `bitmask<T>` so its instances can be ordered.
 
 ### `std::hash<bitmask<T>>`
 
@@ -186,7 +186,7 @@ make test
 - MacOS: Apple Clang 7.3.0
 - Linux: G++ 4.8.5 and G++ 5.4.0
 - Windows: Visual C++ 2015 (14.0) Update 3.
-  *Note that some tests and compile time checks are disabled because of limited support for expression SFINAE.*
+  *Note that some tests and compile time checks are disabled because VC++ has a limited support for expression SFINAE.*
 
 ## License
 This is free and unencumbered software released into the public domain.
