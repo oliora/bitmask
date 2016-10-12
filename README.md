@@ -170,7 +170,7 @@ It's easy: you only need to install CMake 3.1 or above.
 
 ```
 cd <bitmask_dir>
-mkdir ws && cd ws
+mkdir build && cd build
 cmake ..
 make
 make test
