@@ -94,7 +94,7 @@ BOOST_BITMASK_VALUE_MASK(open_mode_4, 0x1A)
 There is an overview of operations available for bitmask. Please check [`bitmask.hpp`](include/boost/bitmask.hpp) for whole picture.
 Note that you can't instantiate and use `bitmask<X>` prior a bitmask for `X` is defined with one of the `BOOST_BITMASK` macros described above.
 
-All bitmask operations are constexpr and noexcept. Have I told this already?
+All bitmask operations are constexpr (Have I told this already?) and noexcept (OK, not all but most of them).
 
 ### Bitwise operations
 
