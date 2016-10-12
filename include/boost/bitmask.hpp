@@ -211,7 +211,8 @@ namespace boost {
 
     private:
         template<class U>
-        bitmask(std::true_type, U bits) noexcept : m_bits(static_cast<underlying_type>(bits)) {}
+        constexpr bitmask(std::true_type, U bits) noexcept
+        : m_bits(static_cast<underlying_type>(bits)) {}
 
         underlying_type m_bits = 0;
     };
