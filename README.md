@@ -12,16 +12,20 @@ To use it just download [the latest version of `bitmask.hpp`](include/boost/bitm
 ```cpp
 #include <bitmask.hpp>
 
+// Define possible flags
 enum class open_mode {
-    binary = 1 << 0,
-    app    = 1 << 1,
-    in     = 1 << 2,
-    out    = 1 << 3,
-    trunc  = 1 << 4,
-    ate    = 1 << 5
+    binary = 0x01,
+    app    = 0x02,
+    in     = 0x04,
+    out    = 0x08,
+    trunc  = 0x10,
+    ate    = 0x20
 };
+
+// Define bitmask
 BOOST_BITMASK_MAX_ELEMENT(open_mode, ate);
 
+// Now the bitmask can be used:
 File open_file(const char *filename, boost::bitmask<open_mode> mode);
 
 auto f = open_file("test.txt", open_mode::out | open_mode::binary | open_mode::trunk);
