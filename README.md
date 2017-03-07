@@ -39,7 +39,7 @@ The implementation has one significant divergences from the concept: a bitmask v
 
 ## All the ways to define a bitmask
 
-The bitmask can be defined in the ways described below. Any way of definition can be used with any type of enum: unscoped (classic), scoped (C++11), relaxed and strongly typed ones. The non-intrusive way of definition is specially designed to use exisiting flag enums without any modification.
+The bitmask can be defined in the ways described below. Any way of definition can be used with any type of enum: unscoped (classic), scoped (C++11), relaxed and strongly typed ones. The non-intrusive way of definition is specially designed to use an exisiting enum without modifying it.
 
 ### Contiguous bitmask values
 
@@ -53,17 +53,20 @@ enum class open_mode_1 {
   
   _bitmask_max_element = out
 };
+
 BOOST_BITMASK(open_mode_1)
 ```
 
 Non-intrusive definition:
 
 ```cpp
+// Note that enum definition has nothing special to support bitmask thus any existing enum can be used
 enum class open_mode_2 {
   app = 0x01,
   in =  0x02,
   out = 0x04,
 };
+
 BOOST_BITMASK_MAX_ELEMENT(open_mode_2, out)
 ```
 
@@ -79,18 +82,21 @@ enum class open_mode_3 {
   
   _bitmask_value_mask = 0x1A // = 0x02 | 0x08 | 0x10
 };
+
 BOOST_BITMASK(open_mode_3)
 ```
 
 Non-intrusive definition:
 
 ```cpp
+// Note that enum definition has nothing special to support bitmask thus any existing enum can be used
 enum class open_mode_4 {
   app = 0x02,
   in =  0x08,
   out = 0x10,
 };
-BOOST_BITMASK_VALUE_MASK(open_mode_4, 0x1A)
+
+BOOST_BITMASK_VALUE_MASK(open_mode_4, 0x1A)  // 0x1A == 0x02 | 0x08 | 0x10
 ```
 
 ## Available operations
