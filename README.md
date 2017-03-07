@@ -39,7 +39,7 @@ The implementation has one significant divergences from the concept: a bitmask v
 
 ## All the ways to define a bitmask
 
-The bitmask can be defined in the ways described below. Any way of definition can be used with any type of enum: unscoped (classic), scoped (C++11), relaxed and strongly typed ones.
+The bitmask can be defined in the ways described below. Any way of definition can be used with any type of enum: unscoped (classic), scoped (C++11), relaxed and strongly typed ones. The non-intrusive way of definition is specially designed to use exisiting flag enums without any modification.
 
 ### Contiguous bitmask values
 
