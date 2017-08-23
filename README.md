@@ -3,7 +3,7 @@ A generic implementation of the [BitmaskType](http://en.cppreference.com/w/cpp/c
 
 The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11 and constexpr.
 
-To use it just download [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and put somewhere in your project.
+The using it is as simple as downloading a [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and putting it somewhere in your project.
 
 
 ## Warm up example
@@ -175,7 +175,7 @@ auto b3 = (flags::binary | flags::in).bits();
 
 ## How to build and run tests
 
-It's easy: you only need to install CMake 3.1 or above.
+It's easy: you only need to install CMake 3.1 and download the library sources.
 
 ```
 cd <bitmask_dir>
@@ -183,6 +183,28 @@ mkdir build && cd build
 cmake ..
 make
 make test
+```
+
+## How to use the library in your project
+
+The easies way to use the library is to download it [`bitmask.hpp`](include/bitmask/bitmask.hpp) and put somewhere in your project sources tree preferable under `bitmask` directory.
+
+If you want to keep the library separated, you can buid and install the library:
+
+```
+cd <bitmask_dir>
+mkdir build && cd build
+cmake .. [-DCMAKE_INSTALL_PREFIX=<prefix>]
+make
+make install
+```
+
+When installed, the library can be simply used in any CMake project:
+
+```
+find_package(bitmask)
+add_executable(your_app ...)
+target_link_libraries(your_app bitmask)
 ```
 
 ## Acknowledgement
