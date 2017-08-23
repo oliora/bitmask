@@ -11,4 +11,22 @@ endif()
 
 enable_testing()
 
+include(GNUInstallDirs)
+
+add_library(bitmask INTERFACE)
+target_sources(bitmask INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/bitmask/bitmask.hpp>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/bitmask/bitmask.hpp>
+)
+
+target_include_directories(bitmask INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+install(TARGETS bitmask EXPORT bitmaskConfig)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(EXPORT bitmaskConfig DESTINATION share/bitmask/cmake)
+export(TARGETS bitmask FILE bitmaskConfig.cmake)
+
 add_subdirectory(test)
