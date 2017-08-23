@@ -198,6 +198,4 @@ make test
   *Note that some tests and compile time checks are disabled because VC++ has a limited support for expression SFINAE.*
 
 ## License
-This is free and unencumbered software released into the **public domain**.
-
-Please check [LICENSE](LICENSE) if you need more details.
+The library released under [Boost Software License v1.0](http://www.boost.org/LICENSE_1_0.txt).
