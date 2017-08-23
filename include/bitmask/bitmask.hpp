@@ -45,7 +45,7 @@
 #include <cassert>
 
 
-namespace boost {
+namespace bitmask {
 
     namespace bitmask_detail {
         // Let's use std::void_t. It's introduced in C++17 but we can easily add it by ourself
@@ -134,7 +134,7 @@ namespace boost {
         // When evaluated at compile time emits a compilation error if condition is not true.
         // Invokes the standard assert at run time.
         #define bitmask_constexpr_assert(cond) \
-            ((void)((cond) ? 0 : (boost::bitmask_detail::constexpr_assert_failed([](){ assert(!#cond);}), 0)))
+            ((void)((cond) ? 0 : (bitmask::bitmask_detail::constexpr_assert_failed([](){ assert(!#cond);}), 0)))
 
         template<class T>
         inline constexpr T checked_value(T value, T mask)
@@ -288,11 +288,11 @@ namespace boost {
 namespace std
 {
     template<class T>
-    struct hash<boost::bitmask<T>>
+    struct hash<bitmask::bitmask<T>>
     {
-        constexpr std::size_t operator() (const boost::bitmask<T>& op) const noexcept
+        constexpr std::size_t operator() (const bitmask::bitmask<T>& op) const noexcept
         {
-            using ut = typename boost::bitmask<T>::underlying_type;
+            using ut = typename bitmask::bitmask<T>::underlying_type;
             return std::hash<ut>{}(op.bits());
         }
     };
@@ -300,20 +300,20 @@ namespace std
 
 // Implementation detail macros
 
-#define BOOST_BITMASK_DETAIL_DEFINE_OPS(value_type) \
-    inline constexpr boost::bitmask<value_type> operator & (value_type l, value_type r) noexcept { return boost::bitmask<value_type>{l} & r; } \
-    inline constexpr boost::bitmask<value_type> operator | (value_type l, value_type r) noexcept { return boost::bitmask<value_type>{l} | r; } \
-    inline constexpr boost::bitmask<value_type> operator ^ (value_type l, value_type r) noexcept { return boost::bitmask<value_type>{l} ^ r; } \
-    inline constexpr boost::bitmask<value_type> operator ~ (value_type op) noexcept { return ~boost::bitmask<value_type>{op}; }                \
-    inline constexpr boost::bitmask<value_type>::underlying_type bits(value_type op) noexcept { return boost::bitmask<value_type>{op}.bits(); }\
-    using unused_bitmask_ ## value_type ## _t_ = decltype(boost::bitmask_detail::disable_unused_function_warnings<value_type>());
+#define BITMASK_DETAIL_DEFINE_OPS(value_type) \
+    inline constexpr bitmask::bitmask<value_type> operator & (value_type l, value_type r) noexcept { return bitmask::bitmask<value_type>{l} & r; } \
+    inline constexpr bitmask::bitmask<value_type> operator | (value_type l, value_type r) noexcept { return bitmask::bitmask<value_type>{l} | r; } \
+    inline constexpr bitmask::bitmask<value_type> operator ^ (value_type l, value_type r) noexcept { return bitmask::bitmask<value_type>{l} ^ r; } \
+    inline constexpr bitmask::bitmask<value_type> operator ~ (value_type op) noexcept { return ~bitmask::bitmask<value_type>{op}; }                \
+    inline constexpr bitmask::bitmask<value_type>::underlying_type bits(value_type op) noexcept { return bitmask::bitmask<value_type>{op}.bits(); }\
+    using unused_bitmask_ ## value_type ## _t_ = decltype(bitmask::bitmask_detail::disable_unused_function_warnings<value_type>());
 
-#define BOOST_BITMASK_DETAIL_DEFINE_VALUE_MASK(value_type, value_mask) \
-    inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { return value_mask; }
+#define BITMASK_DETAIL_DEFINE_VALUE_MASK(value_type, value_mask) \
+    inline constexpr bitmask::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { return value_mask; }
 
-#define BOOST_BITMASK_DETAIL_DEFINE_MAX_ELEMENT(value_type, max_element) \
-    inline constexpr boost::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { \
-        return boost::bitmask_detail::mask_from_max_element<value_type, value_type::max_element>::value;       \
+#define BITMASK_DETAIL_DEFINE_MAX_ELEMENT(value_type, max_element) \
+    inline constexpr bitmask::bitmask_detail::underlying_type_t<value_type> get_enum_mask(value_type) noexcept { \
+        return bitmask::bitmask_detail::mask_from_max_element<value_type, value_type::max_element>::value;       \
     }
 
 
@@ -322,17 +322,17 @@ namespace std
 // Defines missing operations for a bit-mask elements enum 'value_type'
 // Value mask is taken from 'value_type' definition. One should has either
 // '_bitmask_value_mask' or '_bitmask_max_element' element defined.
-#define BOOST_BITMASK(value_type) \
-    BOOST_BITMASK_DETAIL_DEFINE_OPS(value_type)
+#define BITMASK_DEFINE(value_type) \
+    BITMASK_DETAIL_DEFINE_OPS(value_type)
 
 // Defines missing operations and a value mask for
 // a bit-mask elements enum 'value_type'
-#define BOOST_BITMASK_VALUE_MASK(value_type, value_mask) \
-    BOOST_BITMASK_DETAIL_DEFINE_VALUE_MASK(value_type, value_mask) \
-    BOOST_BITMASK_DETAIL_DEFINE_OPS(value_type)
+#define BITMASK_DEFINE_VALUE_MASK(value_type, value_mask) \
+    BITMASK_DETAIL_DEFINE_VALUE_MASK(value_type, value_mask) \
+    BITMASK_DETAIL_DEFINE_OPS(value_type)
 
 // Defines missing operations and a value mask based on max element for
 // a bit-mask elements enum 'value_type'
-#define BOOST_BITMASK_MAX_ELEMENT(value_type, max_element) \
-    BOOST_BITMASK_DETAIL_DEFINE_MAX_ELEMENT(value_type, max_element) \
-    BOOST_BITMASK_DETAIL_DEFINE_OPS(value_type)
+#define BITMASK_DEFINE_MAX_ELEMENT(value_type, max_element) \
+    BITMASK_DETAIL_DEFINE_MAX_ELEMENT(value_type, max_element) \
+    BITMASK_DETAIL_DEFINE_OPS(value_type)

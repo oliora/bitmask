@@ -3,14 +3,13 @@ A generic implementation of the [BitmaskType](http://en.cppreference.com/w/cpp/c
 
 The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11 and constexpr.
 
-To use it just download [the latest version of `bitmask.hpp`](include/boost/bitmask.hpp) and put somewhere in your project.
+To use it just download [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and put somewhere in your project.
 
-**Please note that despite `bitmask` library uses the `boost` namespace it is not an official Boost library.**
 
 ## Warm up example
 
 ```cpp
-#include <bitmask.hpp>
+#include <bitmask/bitmask.hpp>
 
 // Define possible flags
 enum class open_mode {
@@ -23,16 +22,16 @@ enum class open_mode {
 };
 
 // Define bitmask
-BOOST_BITMASK_MAX_ELEMENT(open_mode, ate);
+BITMASK_DEFINE_MAX_ELEMENT(open_mode, ate);
 
 // Now the bitmask can be used:
-File open_file(const char *filename, boost::bitmask<open_mode> mode);
+File open_file(const char *filename, bitmask::bitmask<open_mode> mode);
 
 auto f = open_file("test.txt", open_mode::out | open_mode::binary | open_mode::trunk);
 ```
 ## Intro
 
-`boost::bitmask<T>` class template is an implementation of [BitmaskType](http://en.cppreference.com/w/cpp/concept/BitmaskType) concept.
+`bitmask::bitmask<T>` class template is an implementation of [BitmaskType](http://en.cppreference.com/w/cpp/concept/BitmaskType) concept.
 In short, a bitmask is a finite set of distinct non-zero values (I'd call them "named bits"). It is usually used to implement a set of flags that can be passed to the function.
 
 The implementation has one significant divergences from the concept: a bitmask value and the bitmask itself (i.e. a combination of bitmask values) are two different types. So far I can't see any disadvantage because of this. Also the class provides extra operations in addition to ones required by the concept.
@@ -54,7 +53,7 @@ enum class open_mode_1 {
   _bitmask_max_element = out
 };
 
-BOOST_BITMASK(open_mode_1)
+BITMASK_DEFINE(open_mode_1)
 ```
 
 Non-intrusive definition:
@@ -67,7 +66,7 @@ enum class open_mode_2 {
   out = 0x04,
 };
 
-BOOST_BITMASK_MAX_ELEMENT(open_mode_2, out)
+BITMASK_DEFINE_MAX_ELEMENT(open_mode_2, out)
 ```
 
 ### Noncontiguous bitmask values
@@ -83,7 +82,7 @@ enum class open_mode_3 {
   _bitmask_value_mask = 0x1A // = 0x02 | 0x08 | 0x10
 };
 
-BOOST_BITMASK(open_mode_3)
+BITMASK_DEFINE(open_mode_3)
 ```
 
 Non-intrusive definition:
@@ -96,15 +95,15 @@ enum class open_mode_4 {
   out = 0x10,
 };
 
-BOOST_BITMASK_VALUE_MASK(open_mode_4, 0x1A)  // 0x1A == 0x02 | 0x08 | 0x10
+BITMASK_DEFINE_VALUE_MASK(open_mode_4, 0x1A)  // 0x1A == 0x02 | 0x08 | 0x10
 ```
 
 ## Available operations
 
-There is an overview of operations available for bitmask. Please check [`bitmask.hpp`](include/boost/bitmask.hpp) for whole picture.
-Note that you can't instantiate and use `bitmask<X>` prior a bitmask for `X` is defined with one of the `BOOST_BITMASK` macros described above.
+Below is an overview of operations available for bitmask. Please check [`bitmask.hpp`](include/bitmask/bitmask.hpp) for all the details.
+Note that you can't instantiate and use `bitmask<X>` prior defining a bitmask for `X` with one of the `BITMASK_DEFINE...` macros described above.
 
-All bitmask operations are constexpr (Have I told this already?) and noexcept (OK, not all but most of them).
+All bitmask operations are `constexpr` (Have I told this already?) and most of them are `noexcept`.
 
 ### Bitwise operations
 
@@ -118,7 +117,7 @@ enum class flags {
     in     = 0x04,
     out    = 0x08,
 };
-BOOST_BITMASK_MAX_ELEMENT(flags, out);
+BITMASK_DEFINE_MAX_ELEMENT(flags, out);
 
 auto x = flags::binary | flags::app & (~flags::in ^ flags::out);
 auto y = ~x ^ flags::binary;

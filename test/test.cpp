@@ -1,7 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include <boost/bitmask.hpp>
+#include <bitmask/bitmask.hpp>
+
 
 namespace intrusive
 {
@@ -18,7 +19,7 @@ namespace intrusive
         _bitmask_max_element = awk
     };
 
-    BOOST_BITMASK(syntax_option_type)
+    BITMASK_DEFINE(syntax_option_type)
 
     enum class open_mode
     {
@@ -29,7 +30,7 @@ namespace intrusive
         _bitmask_value_mask = 0x43
     };
 
-    BOOST_BITMASK(open_mode)
+    BITMASK_DEFINE(open_mode)
 }
 
 namespace nonintrusive
@@ -45,7 +46,7 @@ namespace nonintrusive
         awk        = 1 << 5,
     };
 
-    BOOST_BITMASK_MAX_ELEMENT(syntax_option_type, awk)
+    BITMASK_DEFINE_MAX_ELEMENT(syntax_option_type, awk)
 
     enum class open_mode
     {
@@ -54,7 +55,7 @@ namespace nonintrusive
         ate     = 0x40,
     };
 
-    BOOST_BITMASK_VALUE_MASK(open_mode, 0x43)
+    BITMASK_DEFINE_VALUE_MASK(open_mode, 0x43)
 }
 
 
@@ -67,7 +68,7 @@ TEST_CASE( "zero_bitmask", "[]" )
 {
     using intrusive::syntax_option_type;
 
-    boost::bitmask<syntax_option_type> x;
+    bitmask::bitmask<syntax_option_type> x;
 
     int i = x.bits();
 
@@ -87,7 +88,7 @@ TEST_CASE( "zero_bitmask", "[]" )
     CHECK((x == syntax_option_type::ECMAScript));
     CHECK((syntax_option_type::ECMAScript == x));
 
-    boost::bitmask<syntax_option_type> y = 0;
+    bitmask::bitmask<syntax_option_type> y = 0;
 
     CHECK(!y);
     CHECK_FALSE(y);
@@ -95,7 +96,7 @@ TEST_CASE( "zero_bitmask", "[]" )
 
     using nonintrusive::open_mode;
 
-    boost::bitmask<open_mode> z;
+    bitmask::bitmask<open_mode> z;
 
     CHECK(!z);
     CHECK_FALSE(z);
@@ -105,22 +106,22 @@ TEST_CASE( "zero_bitmask", "[]" )
     CHECK((z & open_mode::app) == 0);
     CHECK(z.bits() == 0);
 
-    boost::bitmask<open_mode> z2 = nullptr;
+    bitmask::bitmask<open_mode> z2 = nullptr;
     CHECK(!z2);
     CHECK_FALSE(z2);
     CHECK(0 == z2.bits());
 
-    boost::bitmask<open_mode> z3{nullptr};
+    bitmask::bitmask<open_mode> z3{nullptr};
     CHECK(!z3);
     CHECK_FALSE(z3);
     CHECK(0 == z3.bits());
 
-    boost::bitmask<open_mode> z4{0};
+    bitmask::bitmask<open_mode> z4{0};
     CHECK(!z4);
     CHECK_FALSE(z4);
     CHECK(0 == z4.bits());
 
-    boost::bitmask<open_mode> z5 = 0;
+    bitmask::bitmask<open_mode> z5 = 0;
     CHECK(!z5);
     CHECK_FALSE(z5);
     CHECK(0 == z5.bits());
@@ -130,9 +131,9 @@ TEST_CASE( "bitmask_basics", "[]" )
 {
     using intrusive::syntax_option_type;
 
-    static_assert(std::is_same<boost::bitmask<syntax_option_type>::underlying_type, unsigned>::value, "");
+    static_assert(std::is_same<bitmask::bitmask<syntax_option_type>::underlying_type, unsigned>::value, "");
 
-    boost::bitmask<syntax_option_type> x{syntax_option_type::awk | syntax_option_type::icase};
+    bitmask::bitmask<syntax_option_type> x{syntax_option_type::awk | syntax_option_type::icase};
 
     CHECK(x.bits() == (static_cast<int>(syntax_option_type::awk) | static_cast<int>(syntax_option_type::icase)));
 
@@ -231,7 +232,7 @@ namespace {
         _bitmask_max_element = v2
     };
 
-    BOOST_BITMASK(short_enum)
+    BITMASK_DEFINE(short_enum)
 
     enum class long_enum: long
     {
@@ -241,7 +242,7 @@ namespace {
         _bitmask_max_element = v2
     };
 
-    BOOST_BITMASK(long_enum)
+    BITMASK_DEFINE(long_enum)
 
     enum class longest_enum: uint64_t
     {
@@ -251,21 +252,21 @@ namespace {
         _bitmask_max_element = v2
     };
 
-    BOOST_BITMASK(longest_enum)
+    BITMASK_DEFINE(longest_enum)
 }
 
 TEST_CASE( "bitmask_underlying_type", "[]" )
 {
-    static_assert(sizeof(boost::bitmask<short_enum>::underlying_type) == sizeof(short),
+    static_assert(sizeof(bitmask::bitmask<short_enum>::underlying_type) == sizeof(short),
                   "sizes are equal");
-    static_assert(sizeof(boost::bitmask<short_enum>::underlying_type) == sizeof(short),
+    static_assert(sizeof(bitmask::bitmask<short_enum>::underlying_type) == sizeof(short),
                   "sizes are equal");
-    static_assert(sizeof(boost::bitmask<short_enum>::underlying_type) == sizeof(decltype(boost::bitmask<short_enum>{}.bits())),
+    static_assert(sizeof(bitmask::bitmask<short_enum>::underlying_type) == sizeof(decltype(bitmask::bitmask<short_enum>{}.bits())),
                   "sizes are equal");
-    static_assert(sizeof(boost::bitmask<long_enum>::underlying_type) == sizeof(decltype(boost::bitmask<long_enum>{}.bits())),
+    static_assert(sizeof(bitmask::bitmask<long_enum>::underlying_type) == sizeof(decltype(bitmask::bitmask<long_enum>{}.bits())),
                   "sizes are equal");
 
-    boost::bitmask<longest_enum> x = longest_enum::v1 | longest_enum::v2;
+    bitmask::bitmask<longest_enum> x = longest_enum::v1 | longest_enum::v2;
     CHECK(x.bits() == 0x8000000000000001);
     CHECK((longest_enum::v1 | longest_enum::v2).bits() == 0x8000000000000001);
 }
@@ -274,13 +275,13 @@ TEST_CASE( "bitmask_compare_and_hash", "[]" )
 {
     using intrusive::syntax_option_type;
 
-    boost::bitmask<syntax_option_type> x1{syntax_option_type::collate ^ syntax_option_type::awk};
-    boost::bitmask<syntax_option_type> x2{syntax_option_type::collate};
-    boost::bitmask<syntax_option_type> x3 = x1;
+    bitmask::bitmask<syntax_option_type> x1{syntax_option_type::collate ^ syntax_option_type::awk};
+    bitmask::bitmask<syntax_option_type> x2{syntax_option_type::collate};
+    bitmask::bitmask<syntax_option_type> x3 = x1;
 
-    using hash = std::hash<boost::bitmask<syntax_option_type>>;
+    using hash = std::hash<bitmask::bitmask<syntax_option_type>>;
 
-    CHECK(boost::bitmask<syntax_option_type>{} < x1);
+    CHECK(bitmask::bitmask<syntax_option_type>{} < x1);
     CHECK(x1 != x2);
     CHECK(x1 == x1);
     CHECK_FALSE(x1 < x2);
@@ -294,15 +295,15 @@ TEST_CASE( "bitmask_compare_and_hash", "[]" )
     CHECK_FALSE(x3 < x1);
     CHECK(hash{}(x1) == hash{}(x3));
 
-    std::map<boost::bitmask<syntax_option_type>, int> map;
+    std::map<bitmask::bitmask<syntax_option_type>, int> map;
     map.emplace(syntax_option_type::collate, 2);
-    map.emplace(boost::bitmask<syntax_option_type>{}, 3);
+    map.emplace(bitmask::bitmask<syntax_option_type>{}, 3);
     CHECK(map.begin()->second == 3);
     CHECK((--map.end())->second == 2);
     CHECK(map[syntax_option_type::collate] == 2);
     CHECK(map[nullptr] == 3);
 
-    std::unordered_map<boost::bitmask<syntax_option_type>, int> umap;
+    std::unordered_map<bitmask::bitmask<syntax_option_type>, int> umap;
     map.emplace(nullptr, 2);
     map.emplace(syntax_option_type::collate, 3);
 }
@@ -311,7 +312,7 @@ TEST_CASE( "bitmask_assign_op", "[]" )
 {
     using intrusive::open_mode;
 
-    boost::bitmask<open_mode> x = open_mode::app;
+    bitmask::bitmask<open_mode> x = open_mode::app;
     CHECK((x & open_mode::app));
     CHECK(!(x & open_mode::ate));
 
@@ -377,7 +378,7 @@ TEST_CASE("bitmask_bits_func", "[]")
     CHECK(bits(intrusive::open_mode::app | intrusive::open_mode::ate) == 0x41);
     CHECK(bits(intrusive::open_mode::app | intrusive::open_mode::ate) == (intrusive::open_mode::app | intrusive::open_mode::ate).bits());
 
-    using bm = boost::bitmask<intrusive::open_mode>;
+    using bm = bitmask::bitmask<intrusive::open_mode>;
     CHECK(bits(bm{}) == 0);
     CHECK(bits(bm{intrusive::open_mode::ate}) == 0x40);
     CHECK(bits(bm{intrusive::open_mode::ate}) == bm{intrusive::open_mode::ate}.bits());
@@ -385,22 +386,22 @@ TEST_CASE("bitmask_bits_func", "[]")
 
 TEST_CASE( "bitmask_intrusive_value_mask", "[]" )
 {
-    CHECK(boost::bitmask<intrusive::open_mode>::mask_value == 0x43);
+    CHECK(bitmask::bitmask<intrusive::open_mode>::mask_value == 0x43);
 }
 
 TEST_CASE( "bitmask_intrusive_max_element", "[]" )
 {
-    CHECK(boost::bitmask<intrusive::syntax_option_type>::mask_value == 0x3F);
+    CHECK(bitmask::bitmask<intrusive::syntax_option_type>::mask_value == 0x3F);
 }
 
 TEST_CASE( "bitmask_nonintrusive_value_mask", "[]" )
 {
-    CHECK(boost::bitmask<nonintrusive::open_mode>::mask_value == static_cast<int>(0x43));
+    CHECK(bitmask::bitmask<nonintrusive::open_mode>::mask_value == static_cast<int>(0x43));
 }
 
 TEST_CASE( "bitmask_nonintrusive_max_element", "[]" )
 {
-    CHECK(boost::bitmask<nonintrusive::syntax_option_type>::mask_value == 0x3F);
+    CHECK(bitmask::bitmask<nonintrusive::syntax_option_type>::mask_value == 0x3F);
 }
 
 
@@ -416,7 +417,7 @@ namespace {
             _bitmask_value_mask = 0x13
         };
 
-        BOOST_BITMASK(unscoped_enum)
+        BITMASK_DEFINE(unscoped_enum)
     }
     namespace tst2
     {
@@ -427,7 +428,7 @@ namespace {
             flag2_3 = 0x10,
         };
 
-        BOOST_BITMASK_VALUE_MASK(unscoped_enum, 0x13)
+        BITMASK_DEFINE_VALUE_MASK(unscoped_enum, 0x13)
     }
 }
 
@@ -435,7 +436,7 @@ TEST_CASE( "bitmask_unscoped_enum", "[]" )
 {
     using intrusive::open_mode;
 
-    CHECK((boost::bitmask<tst1::unscoped_enum>::mask_value == 0x13));
+    CHECK((bitmask::bitmask<tst1::unscoped_enum>::mask_value == 0x13));
     CHECK((tst1::flag1_3 & (tst1::flag1_1 | tst1::flag1_3)));
 
     if (tst1::flag1_3 & (tst1::flag1_1 | tst1::flag1_3))
@@ -447,7 +448,7 @@ TEST_CASE( "bitmask_unscoped_enum", "[]" )
     CHECK((tst1::flag1_1 | tst1::flag1_3).bits() == 0x11);
     CHECK(bits(tst1::flag1_1 | tst1::flag1_3) == 0x11);
 
-    CHECK((boost::bitmask<tst2::unscoped_enum>::mask_value == 0x13));
+    CHECK((bitmask::bitmask<tst2::unscoped_enum>::mask_value == 0x13));
     CHECK((tst2::flag2_1 | tst2::flag2_3).bits() == 0x11);
 }
 
@@ -458,13 +459,13 @@ TEST_CASE("bitmask_ones_complement", "[]")
     CHECK((~open_mode::binary) == (open_mode::app | open_mode::ate));
     CHECK((~open_mode::binary).bits() == 0x41);
     CHECK(0 == (~open_mode::binary & open_mode::binary));
-    CHECK((~boost::bitmask<open_mode>{}).bits() == boost::bitmask<open_mode>::mask_value);
-    CHECK((~boost::bitmask<open_mode>{}).bits() == (open_mode::app | open_mode::ate | open_mode::binary));
+    CHECK((~bitmask::bitmask<open_mode>{}).bits() == bitmask::bitmask<open_mode>::mask_value);
+    CHECK((~bitmask::bitmask<open_mode>{}).bits() == (open_mode::app | open_mode::ate | open_mode::binary));
 
     using intrusive::syntax_option_type;
 
     CHECK((~syntax_option_type::ECMAScript).bits() == 0x3F);
-    CHECK((~syntax_option_type::ECMAScript).bits() == boost::bitmask<syntax_option_type>::mask_value);
+    CHECK((~syntax_option_type::ECMAScript).bits() == bitmask::bitmask<syntax_option_type>::mask_value);
 }
 
 namespace {
@@ -475,7 +476,7 @@ namespace {
         _bitmask_max_element = max
     };
 
-    BOOST_BITMASK(extreme_u8)
+    BITMASK_DEFINE(extreme_u8)
 
     enum class extreme_max_8: int8_t {
         min = 1,
@@ -484,7 +485,7 @@ namespace {
         _bitmask_max_element = max
     };
 
-    BOOST_BITMASK(extreme_max_8)
+    BITMASK_DEFINE(extreme_max_8)
 
     enum class extreme_mask_8: int8_t {
         min = 1,
@@ -493,7 +494,7 @@ namespace {
         _bitmask_value_mask = 0x7F
     };
 
-    BOOST_BITMASK(extreme_mask_8)
+    BITMASK_DEFINE(extreme_mask_8)
 
     enum class screwed_extreme_8: int8_t {
         max = int8_t(0x80),
@@ -502,25 +503,25 @@ namespace {
         _bitmask_value_mask = int8_t(0xC1)
     };
 
-    BOOST_BITMASK(screwed_extreme_8)
+    BITMASK_DEFINE(screwed_extreme_8)
 }
 
 TEST_CASE("bitmask_limits", "[]")
 {
-    static_assert(std::is_same<boost::bitmask<extreme_u8>::underlying_type, uint8_t>::value, "");
-    static_assert(boost::bitmask<extreme_u8>::mask_value == 0xFF, "");
+    static_assert(std::is_same<bitmask::bitmask<extreme_u8>::underlying_type, uint8_t>::value, "");
+    static_assert(bitmask::bitmask<extreme_u8>::mask_value == 0xFF, "");
     CHECK((extreme_u8::max | extreme_u8::min).bits() == 0x81);
 
-    static_assert(std::is_same<boost::bitmask<extreme_max_8>::underlying_type, uint8_t>::value, "");
-    static_assert(boost::bitmask<extreme_max_8>::mask_value == 0x7F, "");
+    static_assert(std::is_same<bitmask::bitmask<extreme_max_8>::underlying_type, uint8_t>::value, "");
+    static_assert(bitmask::bitmask<extreme_max_8>::mask_value == 0x7F, "");
     CHECK((extreme_max_8::max | extreme_max_8::min).bits() == 0x41);
 
-    static_assert(std::is_same<boost::bitmask<extreme_mask_8>::underlying_type, uint8_t>::value, "");
-    static_assert(boost::bitmask<extreme_mask_8>::mask_value == 0x7F, "");
+    static_assert(std::is_same<bitmask::bitmask<extreme_mask_8>::underlying_type, uint8_t>::value, "");
+    static_assert(bitmask::bitmask<extreme_mask_8>::mask_value == 0x7F, "");
     CHECK((extreme_mask_8::max | extreme_mask_8::min).bits() == 0x41);
 
-    static_assert(std::is_same<boost::bitmask<screwed_extreme_8>::underlying_type, uint8_t>::value, "");
-    static_assert(boost::bitmask<screwed_extreme_8>::mask_value == 0xC1, "");
+    static_assert(std::is_same<bitmask::bitmask<screwed_extreme_8>::underlying_type, uint8_t>::value, "");
+    static_assert(bitmask::bitmask<screwed_extreme_8>::mask_value == 0xC1, "");
     CHECK((screwed_extreme_8::max | screwed_extreme_8::min).bits() == 0xC0);
 }
 
@@ -528,14 +529,14 @@ TEST_CASE("bitmask_limits", "[]")
 // MS Visual Studio 2015 (even Update 3) has weird support for expressions SFINAE so this test can't be compiled.
 
 namespace {
-    using boost::bitmask_detail::void_t;
-    using boost::bitmask_detail::underlying_type_t;
+    using bitmask::bitmask_detail::void_t;
+    using bitmask::bitmask_detail::underlying_type_t;
 
     template<class T, T value, typename = void_t<>>
     struct is_bitmask_constructible : std::false_type {};
 
     template<class T, T value>
-    struct is_bitmask_constructible<T, value, void_t<std::integral_constant<underlying_type_t<T>, boost::bitmask<T>{value}.bits()>>> : std::true_type {};
+    struct is_bitmask_constructible<T, value, void_t<std::integral_constant<underlying_type_t<T>, bitmask::bitmask<T>{value}.bits()>>> : std::true_type {};
 }
 
 TEST_CASE("incorrect_mask", "[]")
