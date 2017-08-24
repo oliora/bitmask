@@ -3,28 +3,30 @@ A generic implementation of the [BitmaskType](http://en.cppreference.com/w/cpp/c
 
 The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11 and constexpr.
 
-The using it is as simple as downloading a [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and putting it somewhere in your project.
-
+To start using it just download [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and put it somewhere in your project. (Check for other options below).
 
 ## Warm up example
 
 ```cpp
 #include <bitmask/bitmask.hpp>
 
-// Define possible flags
+// 1. Define possible flags
 enum class open_mode {
     binary = 0x01,
     app    = 0x02,
     in     = 0x04,
     out    = 0x08,
     trunc  = 0x10,
-    ate    = 0x20
+    ate    = 0x20,
+    
+    // 2. Define max bitmask value
+    _bitmask_max_element = ate
 };
 
-// Define bitmask
-BITMASK_DEFINE_MAX_ELEMENT(open_mode, ate);
+// 3. Enable bitmask features for the enum
+BITMASK_DEFINE(open_mode);
 
-// Now the bitmask can be used:
+// 4. Now you can use defined bitmask:
 File open_file(const char *filename, bitmask::bitmask<open_mode> mode);
 
 auto f = open_file("test.txt", open_mode::out | open_mode::binary | open_mode::trunk);
@@ -32,15 +34,49 @@ auto f = open_file("test.txt", open_mode::out | open_mode::binary | open_mode::t
 ## Intro
 
 `bitmask::bitmask<T>` class template is an implementation of [BitmaskType](http://en.cppreference.com/w/cpp/concept/BitmaskType) concept.
-In short, a bitmask is a finite set of distinct non-zero values (I'd call them "named bits"). It is usually used to implement a set of flags that can be passed to the function.
+In short, a bitmask is a finite set of distinct non-zero constant values (you can think of them as "named bits"). It is usually used to implement a set of flags that can be passed to the function.
 
-The implementation has one significant divergences from the concept: a bitmask value and the bitmask itself (i.e. a combination of bitmask values) are two different types. So far I can't see any disadvantage because of this. Also the class provides extra operations in addition to ones required by the concept.
+The implementation has one significant divergences from the concept: a bitmask value and the bitmask itself (i.e. a combination of bitmask values) are two different types.
+So far I can't see any disadvantage because of this. Also the class provides extra operations in addition to ones required by the concept.
+
+Unlike `std::bitset<N>`, `bitmask::bitmask<T>` is "tied" to enum `T` and `bitmask<T>` ensures the type and value safety in respect to `T` as following:
+
+1) Only values of `T` (or convertible to) can be used to set bitmask bits:
+```cpp
+bitmask::bitmask<open_mode> mode = read_flags::optimized; // Compilation error
+```
+2) Bit operations (binary ones complement in particular) keep the bitmask value in the domain of the bitmask.
+```cpp
+// Non-contigious bitmask values (details are below)
+enum class open_mode: unsigned char {
+    binary = 0x01,
+    out    = 0x02,
+    app    = 0x08,
+    
+    _bitmask_value_mask = 0x0B // = 0x01 | 0x02 | 0x08
+};
+
+BITMASK_DEFINE(open_mode);
+
+auto open_mode_flags = ~open_mode::app | open_mode::out;
+    // open_mode_flags set to 0x03 (i.e. open_mode::binary | open_mode::out) rather than 0xF7 which would be
+    // outside of the domain of bitmask<open_mode>
+```
+
+`bitmask::bitmask<T>` is simple to use thanks to implicit conversion from `T` to `bitmask<T>` and overloaded operators provided (more details are below).
+
+`bitmask<T>` is the same size as `T` itself. It has a single field of type `std::underlying_type<T>::type`.
 
 ## All the ways to define a bitmask
 
-The bitmask can be defined in the ways described below. Any way of definition can be used with any type of enum: unscoped (classic), scoped (C++11), relaxed and strongly typed ones. The non-intrusive way of definition is specially designed to use an exisiting enum without modifying it.
+The bitmask can be defined in the ways described below.
+Any way of definition can be used with any kind of [enumeration](http://en.cppreference.com/w/cpp/language/enum): unscoped, scoped, relaxed and strongly typed ones.
+The non-intrusive way of bitmask definition is specially designed to be used with an exisiting enum type when its definition may not be altered.
 
 ### Contiguous bitmask values
+
+If bitmask values are contigious bits that starts from the first bit i.e. `0x1`, `0x2`, `0x4`, `0x8` etc then defining the bitmask is as simple as specifying
+its max value (let's call it *max element*).
 
 Intrusive definition:
 
@@ -50,26 +86,31 @@ enum class open_mode_1 {
   in =  0x02,
   out = 0x04,
   
+  // Specify maximum bitmask value
   _bitmask_max_element = out
 };
 
+// Enable bitmask features for the enum
 BITMASK_DEFINE(open_mode_1)
 ```
 
 Non-intrusive definition:
 
 ```cpp
-// Note that enum definition has nothing special to support bitmask thus any existing enum can be used
+// Note that enum definition has nothing special to support bitmask thus any pre-existing enum type can be used
 enum class open_mode_2 {
   app = 0x01,
   in =  0x02,
   out = 0x04,
 };
 
+// Specify maximum bitmask value and enable bitmask features for the enum
 BITMASK_DEFINE_MAX_ELEMENT(open_mode_2, out)
 ```
 
 ### Noncontiguous bitmask values
+
+If bitmask values are non-contigious bits then you have to provide a bit-mask of all possible values.
 
 Intrusive definition:
 
@@ -79,29 +120,54 @@ enum class open_mode_3 {
   in =  0x08,
   out = 0x10,
   
+  // Specify bitmask values mask
   _bitmask_value_mask = 0x1A // = 0x02 | 0x08 | 0x10
 };
 
+// Enable bitmask features for the enum
 BITMASK_DEFINE(open_mode_3)
 ```
 
 Non-intrusive definition:
 
 ```cpp
-// Note that enum definition has nothing special to support bitmask thus any existing enum can be used
+// Note that enum definition has nothing special to support bitmask thus any pre-existing enum type can be used
 enum class open_mode_4 {
   app = 0x02,
   in =  0x08,
   out = 0x10,
 };
 
+// Specify bitmask values mask and enable bitmask features for the enum
 BITMASK_DEFINE_VALUE_MASK(open_mode_4, 0x1A)  // 0x1A == 0x02 | 0x08 | 0x10
+```
+
+### Non-distinct enum values
+
+Note that `bitmask` doesn't require that all enum values are distinct bits. The enum can contain bit combinations as well.
+It works fine as long as `bitmask` is defined properly (i.e. all distinct bits are provided).
+
+```cpp
+// Note that enum definition has nothing special to support bitmask thus any pre-existing enum type can be used
+enum open_mode {
+  open_mode_app = 0x01,
+  open_mode_in =  0x02,
+  open_mode_out = 0x04,
+  open_mode_binary = 0x08,
+  open_mode_binary_out = open_mode_binary | open_mode_out // Not a distinct bit but a combination of other bits
+};
+
+// Note that we use `open_mode_binary` rather than `open_mode_binary_out` because
+// former is the maximum distinct bit (i.e. a bitmask value) while latter is not.
+BITMASK_DEFINE_MAX_ELEMENT(open_mode, open_mode_binary)
+
+auto f = open_file("test.txt", open_mode_binary_out | open_mode_app);
 ```
 
 ## Available operations
 
-Below is an overview of operations available for bitmask. Please check [`bitmask.hpp`](include/bitmask/bitmask.hpp) for all the details.
-Note that you can't instantiate and use `bitmask<X>` prior defining a bitmask for `X` with one of the `BITMASK_DEFINE...` macros described above.
+There is an overview of operations available for bitmask. Please check [`bitmask.hpp`](include/bitmask/bitmask.hpp) for all the details.
+Note that you can't instantiate and use `bitmask<T>` prior defining a bitmask for `T` with one of the `BITMASK_DEFINE...` macros described above.
 
 All bitmask operations are `constexpr` (Have I told this already?) and most of them are `noexcept`.
 
@@ -178,8 +244,10 @@ auto b3 = (flags::binary | flags::in).bits();
 It's easy: you only need to install CMake 3.1 and download the library sources.
 
 ```
-cd <bitmask_dir>
-mkdir build && cd build
+git clone https://github.com/oliora/bitmask.git
+cd bitmask
+mkdir build
+cd build
 cmake ..
 make
 make test
@@ -187,13 +255,15 @@ make test
 
 ## How to use the library in your project
 
-The easies way to use the library is to download it [`bitmask.hpp`](include/bitmask/bitmask.hpp) and put somewhere in your project sources tree preferable under `bitmask` directory.
+The easies way to use the library is to download [`bitmask.hpp`](include/bitmask/bitmask.hpp) and put it somewhere in your project source tree preferable under `bitmask` directory.
 
 If you want to keep the library separated, you can buid and install the library:
 
 ```
-cd <bitmask_dir>
-mkdir build && cd build
+git clone https://github.com/oliora/bitmask.git
+cd bitmask
+mkdir build
+cd build
 cmake .. [-DCMAKE_INSTALL_PREFIX=<prefix>]
 make
 make install
