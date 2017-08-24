@@ -65,7 +65,7 @@ namespace bitmask {
             static_assert(max_element_value_ <= (std::numeric_limits<typename std::underlying_type<T>::type>::max() >> 1) + 1,
                           "Max element is greater than the underlying type's highest bit");
 
-            // `(value - 1 << 1) + 1` is used rather that simpler `(value << 1) - 1`
+            // `((value - 1) << 1) + 1` is used rather that simpler `(value << 1) - 1`
             // because latter overflows in case if `value` is the highest bit of the underlying type.
             static constexpr underlying_type_t<T> value =
                 max_element_value_ ? ((max_element_value_ - 1) << 1) + 1 : 0;
