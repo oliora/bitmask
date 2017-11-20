@@ -3,7 +3,7 @@ A generic implementation of the [BitmaskType](http://en.cppreference.com/w/cpp/c
 
 The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11 and constexpr.
 
-To start using it just download [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and put it somewhere in your project. (Check for other options [below](#how-to-use-the-library-in-your-project)).
+To start using it just download [the latest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and put it somewhere in your project. (Check for other options [below](#how-to-use-bitmask-library-in-your-project)).
 
 ## Warm up example
 
