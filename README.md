@@ -255,7 +255,7 @@ make test
 
 ## How to use Bitmask library in your project
 
-The simplest way is to download [the lastest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and place into your project source tree, preferable under `bitmask` directory.
+The simplest way is to download [the lastest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and place it into your project source tree, preferable under `bitmask` directory.
 
 If you want to keep the library separated, you can build and install the library:
 
