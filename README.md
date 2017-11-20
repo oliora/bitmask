@@ -253,11 +253,11 @@ make
 make test
 ```
 
-## How to use the library in your project
+## How to use Bitmask library in your project
 
-The easies way to use the library is to download [`bitmask.hpp`](include/bitmask/bitmask.hpp) and put it somewhere in your project source tree preferable under `bitmask` directory.
+The simplest way is to download [the lastest version of `bitmask.hpp`](include/bitmask/bitmask.hpp) and place into your project source tree, preferable under `bitmask` directory.
 
-If you want to keep the library separated, you can buid and install the library:
+If you want to keep the library separated, you can build and install the library:
 
 ```
 git clone https://github.com/oliora/bitmask.git
@@ -269,12 +269,12 @@ make
 make install
 ```
 
-When installed, the library can be simply used in any CMake project:
+When installed, the library can be simply used in any CMake project as following:
 
 ```
 find_package(bitmask)
-add_executable(your_app ...)
-target_link_libraries(your_app bitmask)
+add_executable(<your_app> ...)
+target_link_libraries(<your_app> bitmask)
 ```
 
 ## Acknowledgement
