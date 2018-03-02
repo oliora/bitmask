@@ -29,6 +29,7 @@
 
 #include <type_traits>
 #include <functional>  // for std::hash
+#include <limits>  // for std::numeric_limits
 #include <cassert>
 
 
