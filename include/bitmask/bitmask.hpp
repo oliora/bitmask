@@ -7,7 +7,7 @@
     A generic implementation of the BitmaskType C++ concept
     http://en.cppreference.com/w/cpp/concept/BitmaskType
 
-    Version: 1.1
+    Version: 1.1.1
 
     Latest version and documentation:
         https://github.com/oliora/bitmask
@@ -19,6 +19,9 @@
 
     Changes history
     ---------------
+    v1.1.1:
+        - Added missed `<limits>` header
+        - README and code comments updated
     v1.1:
         - Change namespace from `boost` to `bitmask`
         - Add CMake package
