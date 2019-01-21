@@ -12,12 +12,12 @@ To start using it just download [the latest version of `bitmask.hpp`](include/bi
 
 // 1. Define possible flags
 enum class open_mode {
-    binary = 0x01,
-    app    = 0x02,
-    in     = 0x04,
-    out    = 0x08,
-    trunc  = 0x10,
-    ate    = 0x20,
+    binary = 1<<0,
+    app    = 1<<1,
+    in     = 1<<2,
+    out    = 1<<3,
+    trunc  = 1<<4,
+    ate    = 1<<5,
     
     // 2. Define max bitmask value
     _bitmask_max_element = ate
@@ -30,6 +30,27 @@ BITMASK_DEFINE(open_mode);
 File open_file(const char *filename, bitmask::bitmask<open_mode> mode);
 
 auto f = open_file("test.txt", open_mode::out | open_mode::binary | open_mode::trunk);
+
+// 5. bitmask can be inherited and have methods
+class flag : public bitmask::bitmask<open_mode> {
+public:
+    flag() {
+        m_bits = 0;
+    }
+
+    flag(const flag_t& flag) {
+        m_bits = static_cast<underlying_type>(flag);
+    }
+
+    std::string str() {
+        std::ostringstream ss;
+        ss<<(*this & open_mode::in ? "in" : "out");
+        return ss.str();
+    }
+};
+
+flag f = open_mode::app|open_mode::out;
+std::cout<<f.str()<<std::endl;
 ```
 ## Intro
 

@@ -525,6 +525,52 @@ TEST_CASE("bitmask_limits", "[]")
     CHECK((screwed_extreme_8::max | screwed_extreme_8::min).bits() == 0xC0);
 }
 
+namespace {
+    enum class flag_t : uint16_t {
+        none = 0,
+        execute = 1<<0,
+        write = 1<<1,
+        read = 1<<2,
+        all = execute|write|read,
+        max = 0xFFFF,
+        _bitmask_value_mask = max
+    };
+    BITMASK_DEFINE(flag_t)
+
+    class flag : public bitmask::bitmask<flag_t> {
+    public:
+        flag() {
+            m_bits = 0;
+        }
+
+        flag(const flag_t& flag) {
+            m_bits = static_cast<underlying_type>(flag);
+        }
+
+        std::string str() {
+            std::ostringstream ss;
+            ss<<(*this & flag_t::read ? "r" : "-");
+            ss<<(*this & flag_t::write ? "w" : "-");
+            ss<<(*this & flag_t::execute ? "x" : "-");
+            return ss.str();
+        }
+    };
+}
+
+TEST_CASE("class_derive", "[]")
+{
+    flag f1;
+    CHECK(f1.bits() == 0);
+    flag f = flag_t::execute;
+    CHECK(f.bits() == 1);
+    f &= ~flag_t::execute|flag_t::execute;
+    f |= flag_t::write;
+    CHECK(f.bits() == 3);
+    CHECK(f.str() == "-wx");
+    f &= ~f;
+    CHECK(f.bits() == 0);
+}
+
 #if !defined _MSC_VER
 // MS Visual Studio 2015 (even Update 3) has weird support for expressions SFINAE so this test can't be compiled.
 

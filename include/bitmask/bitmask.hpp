@@ -7,7 +7,7 @@
     A generic implementation of the BitmaskType C++ concept
     http://en.cppreference.com/w/cpp/concept/BitmaskType
 
-    Version: 1.1.2
+    Version: 1.1.3
 
     Latest version and documentation:
         https://github.com/oliora/bitmask
@@ -19,6 +19,8 @@
 
     Changes history
     ---------------
+    v1.1.3:
+        - Fix: class bitmask now can be inherited (https://github.com/oliora/bitmask/issues/4)
     v1.1.2:
         - Fix: Can not define bitmask for a class local enum (https://github.com/oliora/bitmask/issues/3)
     v1.1.1:
@@ -202,7 +204,7 @@ namespace bitmask {
             return *this;
         }
 
-    private:
+    protected:
         template<class U>
         constexpr bitmask(std::true_type, U bits) noexcept
         : m_bits(static_cast<underlying_type>(bits)) {}
