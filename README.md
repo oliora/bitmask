@@ -264,7 +264,7 @@ git clone https://github.com/oliora/bitmask.git
 cd bitmask
 mkdir build
 cd build
-cmake .. [-DCMAKE_INSTALL_PREFIX=<prefix>]
+cmake [-DCMAKE_INSTALL_PREFIX=<prefix>] ..
 make
 make install
 ```
