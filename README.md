@@ -1,5 +1,5 @@
 # bitmask
-A generic implementation of the [BitmaskType](http://en.cppreference.com/w/cpp/concept/BitmaskType) C++ concept.
+A generic implementation of the [BitmaskType](https://en.cppreference.com/w/cpp/named_req/BitmaskType) C++ concept.
 
 The library is a tiny single header without any dependencies except the standard library. And yes, it's pure C++11 and constexpr.
 
