@@ -83,15 +83,14 @@ namespace bitmask {
         template<class T>
         struct has_max_element<T, void_t<decltype(T::_bitmask_max_element)>> : std::true_type {};
 
-#if !defined _MSC_VER
+#if !defined(_MSC_VER) || (_MSC_VER >= 1900)
         template<class, class = void_t<>>
         struct has_value_mask : std::false_type {};
 
         template<class T>
         struct has_value_mask<T, void_t<decltype(T::_bitmask_value_mask)>> : std::true_type {};
 #else
-        // MS Visual Studio 2015 (even Update 3) has weird support for expressions SFINAE
-        // so I can't get a real check for `has_value_mask` to compile.
+        // Old MS Visual Studio has weird support for expressions SFINAE so I can't get a real check for `has_value_mask` to compile.
         template<class T>
         struct has_value_mask: std::integral_constant<bool, !has_max_element<T>::value> {};
 #endif
@@ -127,7 +126,7 @@ namespace bitmask {
         // When evaluated at compile time emits a compilation error if condition is not true.
         // Invokes the standard assert at run time.
         #define bitmask_constexpr_assert(cond) \
-            ((void)((cond) ? 0 : (bitmask::bitmask_detail::constexpr_assert_failed([](){ assert(!#cond);}), 0)))
+            ((void)((cond) ? 0 : (::bitmask::bitmask_detail::constexpr_assert_failed([](){ assert(!#cond);}), 0)))
 
         template<class T>
         inline constexpr T checked_value(T value, T mask)
