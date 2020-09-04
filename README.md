@@ -216,7 +216,7 @@ bitmask<flags> x = flags::binary | flags::app;
 if (y) ...                     // false
 if (!y) ...                    // true
 if (x & flags::binary) ...     // true
-if (!(x & flags::binary)) ...  // true
+if (!(x & flags::binary)) ...  // false
 ```
 
 ### Less than
